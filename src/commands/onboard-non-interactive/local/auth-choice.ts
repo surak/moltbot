@@ -177,6 +177,52 @@ export async function applyNonInteractiveAuthChoice(params: {
     return applyZaiConfig(nextConfig);
   }
 
+  if (authChoice === "openai-private-endpoint") {
+    const providerId = opts.openaiPrivateProviderId?.trim() || "openai-private";
+    const baseUrl = opts.openaiPrivateBaseUrl?.trim();
+    const apiKey = opts.openaiPrivateApiKey?.trim();
+    const modelId = opts.openaiPrivateModelId?.trim();
+
+    if (!baseUrl || !apiKey || !modelId) {
+      runtime.error(
+        "Missing required options for openai-private-endpoint (requires --openai-private-base-url, --openai-private-api-key, and --openai-private-model-id).",
+      );
+      runtime.exit(1);
+      return null;
+    }
+
+    const providers = { ...nextConfig.models?.providers };
+    providers[providerId] = {
+      baseUrl,
+      apiKey,
+      auth: "api-key",
+      api: "openai-completions",
+      models: [
+        {
+          id: modelId,
+          name: modelId,
+          reasoning: false,
+          input: ["text", "image"],
+          cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+          contextWindow: 128000,
+          maxTokens: 4096,
+          compat: {},
+        },
+      ],
+    };
+
+    nextConfig = {
+      ...nextConfig,
+      models: {
+        ...nextConfig.models,
+        providers,
+      },
+    };
+
+    const { applyPrimaryModel } = await import("../../model-picker.js");
+    return applyPrimaryModel(nextConfig, `${providerId}/${modelId}`);
+  }
+
   if (authChoice === "openai-api-key") {
     const resolved = await resolveNonInteractiveApiKey({
       provider: "openai",

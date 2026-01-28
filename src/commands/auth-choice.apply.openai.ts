@@ -1,5 +1,6 @@
 import { loginOpenAICodex } from "@mariozechner/pi-ai";
 import { resolveEnvApiKey } from "../agents/model-auth.js";
+import { applyPrimaryModel } from "./model-picker.js";
 import { upsertSharedEnvVar } from "../infra/env-file.js";
 import { isRemoteEnvironment } from "./oauth-env.js";
 import {
@@ -68,6 +69,83 @@ export async function applyAuthChoiceOpenAI(
       "OpenAI API key",
     );
     return { config: params.config };
+  }
+
+  if (params.authChoice === "openai-private-endpoint") {
+    const providerIdInput =
+      params.opts?.openaiPrivateProviderId ||
+      (await params.prompter.text({
+        message: "Provider ID",
+        initialValue: "openai-private",
+        validate: (v) => (v?.trim() ? undefined : "Required"),
+      }));
+    const providerId = String(providerIdInput).trim();
+
+    const baseUrlInput =
+      params.opts?.openaiPrivateBaseUrl ||
+      (await params.prompter.text({
+        message: "Base URL",
+        placeholder: "https://api.openai.com/v1",
+        validate: (v) => (v?.trim() ? undefined : "Required"),
+      }));
+    const baseUrl = String(baseUrlInput).trim();
+
+    const apiKeyInput =
+      params.opts?.openaiPrivateApiKey ||
+      (await params.prompter.text({
+        message: "API Key / Bearer Token",
+        validate: (v) => (v?.trim() ? undefined : "Required"),
+      }));
+    const apiKey = String(apiKeyInput).trim();
+
+    const modelIdInput =
+      params.opts?.openaiPrivateModelId ||
+      (await params.prompter.text({
+        message: "Model ID",
+        placeholder: "gpt-4o",
+        validate: (v) => (v?.trim() ? undefined : "Required"),
+      }));
+    const modelId = String(modelIdInput).trim();
+
+    const providers = { ...params.config.models?.providers };
+    providers[providerId] = {
+      baseUrl,
+      apiKey,
+      auth: "api-key",
+      api: "openai-completions",
+      models: [
+        {
+          id: modelId,
+          name: modelId,
+          reasoning: false,
+          input: ["text", "image"],
+          cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+          contextWindow: 128000,
+          maxTokens: 4096,
+          compat: {},
+        },
+      ],
+    };
+
+    let nextConfig = {
+      ...params.config,
+      models: {
+        ...params.config.models,
+        providers,
+      },
+    };
+
+    const modelRef = `${providerId}/${modelId}`;
+    if (params.setDefaultModel) {
+      nextConfig = applyPrimaryModel(nextConfig, modelRef);
+    }
+
+    await params.prompter.note(
+      `Configured private endpoint ${baseUrl} with model ${modelRef}`,
+      "OpenAI Private Endpoint",
+    );
+
+    return { config: nextConfig, agentModelOverride: params.setDefaultModel ? undefined : modelRef };
   }
 
   if (params.authChoice === "openai-codex") {

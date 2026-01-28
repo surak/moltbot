@@ -371,6 +371,10 @@ export async function runOnboardingWizard(
     opts: {
       tokenProvider: opts.tokenProvider,
       token: opts.authChoice === "apiKey" && opts.token ? opts.token : undefined,
+      openaiPrivateBaseUrl: opts.openaiPrivateBaseUrl,
+      openaiPrivateApiKey: opts.openaiPrivateApiKey,
+      openaiPrivateModelId: opts.openaiPrivateModelId,
+      openaiPrivateProviderId: opts.openaiPrivateProviderId,
     },
   });
   nextConfig = authResult.config;

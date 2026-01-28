@@ -24,6 +24,10 @@ export type ApplyAuthChoiceParams = {
   opts?: {
     tokenProvider?: string;
     token?: string;
+    openaiPrivateBaseUrl?: string;
+    openaiPrivateApiKey?: string;
+    openaiPrivateModelId?: string;
+    openaiPrivateProviderId?: string;
   };
 };
 

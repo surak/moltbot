@@ -38,8 +38,8 @@ const AUTH_CHOICE_GROUP_DEFS: {
   {
     value: "openai",
     label: "OpenAI",
-    hint: "Codex OAuth + API key",
-    choices: ["openai-codex", "openai-api-key"],
+    hint: "Codex OAuth + API key + Private",
+    choices: ["openai-codex", "openai-api-key", "openai-private-endpoint"],
   },
   {
     value: "anthropic",
@@ -134,6 +134,11 @@ export function buildAuthChoiceOptions(params: {
   });
   options.push({ value: "chutes", label: "Chutes (OAuth)" });
   options.push({ value: "openai-api-key", label: "OpenAI API key" });
+  options.push({
+    value: "openai-private-endpoint",
+    label: "OpenAI private endpoint",
+    hint: "Custom baseUrl + apiKey (OpenAI-compatible)",
+  });
   options.push({ value: "openrouter-api-key", label: "OpenRouter API key" });
   options.push({
     value: "ai-gateway-api-key",

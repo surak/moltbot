@@ -11,6 +11,7 @@ export type AuthChoice =
   | "chutes"
   | "openai-codex"
   | "openai-api-key"
+  | "openai-private-endpoint"
   | "openrouter-api-key"
   | "ai-gateway-api-key"
   | "moonshot-api-key"
@@ -61,6 +62,10 @@ export type OnboardOptions = {
   tokenExpiresIn?: string;
   anthropicApiKey?: string;
   openaiApiKey?: string;
+  openaiPrivateBaseUrl?: string;
+  openaiPrivateApiKey?: string;
+  openaiPrivateModelId?: string;
+  openaiPrivateProviderId?: string;
   openrouterApiKey?: string;
   aiGatewayApiKey?: string;
   moonshotApiKey?: string;
